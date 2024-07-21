@@ -1,0 +1,60 @@
+body {
+    color: #e5e5e5;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+
+.btn-chooser {
+    width: 150px;
+    height: auto;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: #cdb4db;
+}
+
+button:hover {
+    background-color: #ffafcc
+}
+
+.user-input-search{
+    width: 150px;
+    height: auto;
+}
+
+.user-files, .rename-files {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.main-content-wrapper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.rename-btn-section {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+ul {
+    
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    margin: 5px;
+}
