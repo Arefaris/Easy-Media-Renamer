@@ -3,38 +3,59 @@ body {
     font-family: "Roboto", sans-serif;
     font-weight: 400;
     font-style: normal;
+    background-color: #003049;
 }
 
-header {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
 
 
 .btn-chooser {
     width: 150px;
     height: auto;
+    
+}
+
+button {
     padding-top: 5px;
     padding-bottom: 5px;
-    background-color: #cdb4db;
+    background-color: #eae2b7;
 }
 
 button:hover {
-    background-color: #ffafcc
+    background-color: #fcbf49;
 }
 
 .user-input-search{
-    width: 150px;
+    width: 300px;
     height: auto;
+    padding: 5px;
+    border: solid 2px;
+}
+
+.srch-btn {
+    width: 50px;
+    height: auto;
+    padding: 5px;
+    margin-left: 5px;
 }
 
 .user-files, .rename-files {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    border: solid;
+    width: 49%;
+    margin-top: 10px;
     align-items: center;
 }
+
+.arrow-gui-pointer {
+    display: flex;
+    align-items: center;
+    font-size: 25px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
 
 .main-content-wrapper {
     display: flex;
@@ -45,16 +66,29 @@ button:hover {
 .rename-btn-section {
     display: flex;
     justify-content: center;
+    margin-top: 25px;
     gap: 5px;
 }
 
+.input-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+::placeholder {
+    text-align: center; 
+ }
+
 ul {
-    
+
     list-style-type: none;
     padding: 0;
     margin: 0;
 }
 
 li {
-    margin: 5px;
+    padding: 10px;
+    margin: 10px;
 }
+

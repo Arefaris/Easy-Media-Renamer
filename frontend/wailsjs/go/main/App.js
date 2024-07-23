@@ -6,10 +6,22 @@ export function FilesInDirectoryHandler(arg1) {
   return window['go']['main']['App']['FilesInDirectoryHandler'](arg1);
 }
 
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
+export function GetEpisodes(arg1) {
+  return window['go']['main']['App']['GetEpisodes'](arg1);
+}
+
+export function JsPrintLn(arg1) {
+  return window['go']['main']['App']['JsPrintLn'](arg1);
 }
 
 export function OpenDirectoryDialog() {
   return window['go']['main']['App']['OpenDirectoryDialog']();
+}
+
+export function RenameAll() {
+  return window['go']['main']['App']['RenameAll']();
+}
+
+export function SearchShow(arg1) {
+  return window['go']['main']['App']['SearchShow'](arg1);
 }
