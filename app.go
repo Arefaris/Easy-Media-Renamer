@@ -61,8 +61,11 @@ func (a *App) JsPrintLn(console string) {
 	fmt.Println("js_side: "+console)
 }
 
-func (a *App) SearchShow(show string) []string{
+func (a *App) SearchShow(show string) ([]Show){
 	url := "https://api.tvmaze.com/search/shows?q="+show 
+	
+	
+	
 
 	// Выполнение HTTP GET запроса
 	resp, err := http.Get(url)
@@ -83,14 +86,10 @@ func (a *App) SearchShow(show string) []string{
 		log.Fatalf("Ошибка при декодировании JSON: %v", err)
 	}
 	
-	// Вывод результата
-	newshow := shows[0]
-	
-	//show_title_from_api := newshow.Show.Name
-	show_id_from_api := newshow.Show.ID
-	return a.GetEpisodes(show_id_from_api)
+	return shows
 	
 }
+
 //структура для json'a и список эпизодов
 var episodes []Episode
 var episodeList = []string{}
@@ -162,19 +161,21 @@ func (a *App) FilesInDirectoryHandler(directory string)[]string{
 }
 
 func (a *App)RenameAll() {
-	fmt.Println(file_names_list)
-	for index, file := range file_names_list {
+	if file_names_list != nil && episodeList != nil {
+		for index, file := range file_names_list {
 		
-		ext := filepath.Ext(file)
-		episodeNumber := index+1
-		
-		enS := strconv.Itoa(episodeNumber)
-		newfile := userDIR+"\\"+enS+". "+episodeList[index]+ext
-		fmt.Println(newfile)
-		e := os.Rename(file_path_list[index], newfile) 
-		if e != nil { 
-			log.Fatal(e) 
-		} 
+			ext := filepath.Ext(file)
+			episodeNumber := index+1
+			enS := strconv.Itoa(episodeNumber)
+			newfile := userDIR+"\\"+enS+". "+episodeList[index]+ext
+			fmt.Println(newfile)
+			e := os.Rename(file_path_list[index], newfile) 
+	
+			if e != nil { 
+				log.Fatal(e) 
+			} 
+		}
 	}
+	
 }
 

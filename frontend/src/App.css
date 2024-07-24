@@ -39,6 +39,8 @@ button:hover {
 }
 
 .user-files, .rename-files {
+    padding-top: 10px;
+    padding-bottom: 10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -48,10 +50,26 @@ button:hover {
     align-items: center;
 }
 
+.list-search {
+    display: none;
+    flex-direction: column;
+    width: 50%;
+    border: none;
+    margin-top: 10px;
+    align-items: center;
+}
+
+.search-modal {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
 .arrow-gui-pointer {
     display: flex;
     align-items: center;
     font-size: 25px;
+    margin-top: 10px;
     margin-left: 5px;
     margin-right: 5px;
 }
@@ -60,13 +78,15 @@ button:hover {
 .main-content-wrapper {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
+    
+    margin-top: 80px;
 }
 
 .rename-btn-section {
     display: flex;
     justify-content: center;
     margin-top: 25px;
+    margin-bottom: 15px;
     gap: 5px;
 }
 
@@ -88,7 +108,15 @@ ul {
 }
 
 li {
-    padding: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
     margin: 10px;
+}
+
+li:hover {
+    background-color: #264653;
+    cursor: pointer;
 }
 
