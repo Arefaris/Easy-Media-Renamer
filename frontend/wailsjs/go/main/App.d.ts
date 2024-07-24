@@ -12,4 +12,6 @@ export function OpenDirectoryDialog():Promise<string>;
 
 export function RenameAll():Promise<void>;
 
+export function RenameSelected(arg1:string,arg2:string):Promise<void>;
+
 export function SearchShow(arg1:string):Promise<Array<main.Show>>;

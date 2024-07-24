@@ -22,6 +22,10 @@ export function RenameAll() {
   return window['go']['main']['App']['RenameAll']();
 }
 
+export function RenameSelected(arg1, arg2) {
+  return window['go']['main']['App']['RenameSelected'](arg1, arg2);
+}
+
 export function SearchShow(arg1) {
   return window['go']['main']['App']['SearchShow'](arg1);
 }

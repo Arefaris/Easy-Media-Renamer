@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -149,12 +148,9 @@ func (a *App) FilesInDirectoryHandler(directory string)[]string{
     }
     
 	for _, file := range files {
-		
 		file_names_list = append(file_names_list, file.Name())
 		file_path_list = append(file_path_list, filepath.Join(directory, file.Name()))
-		
-		
-    }
+	}
 
 	return file_names_list
 
@@ -163,12 +159,10 @@ func (a *App) FilesInDirectoryHandler(directory string)[]string{
 func (a *App)RenameAll() {
 	if file_names_list != nil && episodeList != nil {
 		for index, file := range file_names_list {
-		
 			ext := filepath.Ext(file)
 			episodeNumber := index+1
 			enS := strconv.Itoa(episodeNumber)
 			newfile := userDIR+"\\"+enS+". "+episodeList[index]+ext
-			fmt.Println(newfile)
 			e := os.Rename(file_path_list[index], newfile) 
 	
 			if e != nil { 
@@ -179,3 +173,15 @@ func (a *App)RenameAll() {
 	
 }
 
+func (a *App)RenameSelected(originalFileName string, newFileName string){
+
+	originalFilePath := userDIR+"\\"+originalFileName
+	ext := filepath.Ext(originalFilePath)
+	newFilePath := userDIR+"\\"+newFileName+ext
+	
+	e := os.Rename(originalFilePath, newFilePath) 
+	
+			if e != nil { 
+				log.Fatal(e) 
+			} 
+}
