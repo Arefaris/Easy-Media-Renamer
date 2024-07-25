@@ -18,8 +18,8 @@ export function OpenDirectoryDialog() {
   return window['go']['main']['App']['OpenDirectoryDialog']();
 }
 
-export function RenameAll() {
-  return window['go']['main']['App']['RenameAll']();
+export function RenameAll(arg1) {
+  return window['go']['main']['App']['RenameAll'](arg1);
 }
 
 export function RenameSelected(arg1, arg2) {

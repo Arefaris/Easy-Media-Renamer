@@ -156,18 +156,23 @@ func (a *App) FilesInDirectoryHandler(directory string)[]string{
 
 }
 
-func (a *App)RenameAll() {
-	if file_names_list != nil && episodeList != nil {
-		for index, file := range file_names_list {
+func (a *App)RenameAll(fileNamelist[]string) {
+	
+	if fileNamelist != nil && episodeList != nil {
+		for index, file := range fileNamelist {
 			ext := filepath.Ext(file)
 			episodeNumber := index+1
 			enS := strconv.Itoa(episodeNumber)
+			
 			newfile := userDIR+"\\"+enS+". "+episodeList[index]+ext
-			e := os.Rename(file_path_list[index], newfile) 
+			oldfile := userDIR+"\\"+fileNamelist[index]
+			
+			e := os.Rename(oldfile, newfile) 
 	
 			if e != nil { 
 				log.Fatal(e) 
-			} 
+			}
+			fmt.Println(oldfile, "changed to: ", newfile)
 		}
 	}
 	

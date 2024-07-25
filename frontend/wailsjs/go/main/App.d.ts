@@ -10,7 +10,7 @@ export function JsPrintLn(arg1:string):Promise<void>;
 
 export function OpenDirectoryDialog():Promise<string>;
 
-export function RenameAll():Promise<void>;
+export function RenameAll(arg1:Array<string>):Promise<void>;
 
 export function RenameSelected(arg1:string,arg2:string):Promise<void>;
 

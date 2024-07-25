@@ -2,7 +2,10 @@ import './App.css';
 import { OpenDirectoryDialog } from '../wailsjs/go/main/App';
 import { FilesInDirectoryHandler, JsPrintLn, SearchShow, RenameAll,  GetEpisodes, RenameSelected  } from "../wailsjs/go/main/App";
 import {WindowSetTitle} from "../wailsjs/runtime/runtime"
-
+import Sortable from 'sortablejs';
+import {React, useRef, useEffect } from 'react'
+// TODO: добавить другие источники API
+// сделать правильные названия серий
 let EpList
 let userDir
 let episodeList
@@ -16,11 +19,18 @@ WindowSetTitle("Easy Media Renamer")
 
 //html rendering
 function App() {
+    
+    let listElemRef = useRef(null);
+
+    useEffect(() => {
+        if (listElemRef.current) {
+            Sortable.create(listElemRef.current)
+        }
+    }, []);
 
     return (
         <div id="App">
             <div>
-
             <div className="rename-btn-section">
                     <button className="btn-chooser" onClick={openDirectory}>Directory Chooser</button>
                     <button className="btn-chooser" onClick={CallRenameAllGo}>Rename all</button>
@@ -40,7 +50,7 @@ function App() {
             <div className="main-content-wrapper">
                     <div className="user-files">
                     <div>Original files</div>
-                        <ul className="list-elem">
+                        <ul className="list-elem" ref={listElemRef}>
                         </ul>
                     </div>
 
@@ -56,6 +66,11 @@ function App() {
         </div>
     )
 }
+
+
+    
+    
+
 
 
 async function renameSelected(){
@@ -93,9 +108,13 @@ async function CallSeacrhShowGo(){
 }
 
 async function CallRenameAllGo(){
-    
-   
-        await RenameAll()
+        let fileList = document.querySelector(".list-elem")
+        let fileListReorder = []
+        for (let i = 0; i < fileList.childNodes.length; i++) {
+            fileListReorder.push(fileList.childNodes[i].textContent)
+          }
+        
+        await RenameAll(fileListReorder)
         if (userDir){
             let file_name_list = await FilesInDirectoryHandler(userDir)
             //rendering file list in our html
@@ -106,7 +125,7 @@ async function CallRenameAllGo(){
 
 async function renderFileList(list){
 
-    fileList = document.querySelector(".list-elem")
+    let fileList = document.querySelector(".list-elem")
     fileList.innerHTML = ""
     
     for (let i = 0; i < list.length; i++) {
@@ -128,7 +147,7 @@ async function renderEpList(showid){
     for (let i = 0; i < episodelist.length; i++) {
         let liEl = document.createElement("li")
         liEl.classList.add("file-from-api")
-        liEl.append(i+1+". "+episodelist[i])
+        liEl.append(episodelist[i])
         EpList.append(liEl)
       }
 
