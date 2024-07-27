@@ -3,39 +3,28 @@ body {
     font-family: "Roboto", sans-serif;
     font-weight: 400;
     font-style: normal;
-    background-color: #003049;
+    background-color: #1b263b;
 }
 
 
 
 .btn-chooser {
-    width: 150px;
+    width: 200px;
     height: auto;
     
 }
 
-button {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    background-color: #eae2b7;
-}
-
-button:hover {
-    background-color: #fcbf49;
-}
 
 .user-input-search{
-    width: 300px;
-    height: auto;
+    width: 500px;
     padding: 5px;
-    border: solid 2px;
+    border: solid 1px #1565c0;
+    background-color: #e5e5e5;
 }
 
 .srch-btn {
-    width: 50px;
-    height: auto;
-    padding: 5px;
-    margin-left: 5px;
+    align-self: stretch;
+
 }
 
 .user-files, .rename-files {
@@ -78,8 +67,7 @@ button:hover {
 .main-content-wrapper {
     display: flex;
     justify-content: space-between;
-    
-    margin-top: 80px;
+    margin-top: 15px;
 }
 
 .rename-btn-section {
@@ -93,6 +81,7 @@ button:hover {
 .input-wrapper {
     display: flex;
     justify-content: center;
+    gap: 5px;
     margin-top: 10px;
 }
 

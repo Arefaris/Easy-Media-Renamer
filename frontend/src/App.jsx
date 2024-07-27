@@ -3,7 +3,11 @@ import { OpenDirectoryDialog } from '../wailsjs/go/main/App';
 import { FilesInDirectoryHandler, JsPrintLn, SearchShow, RenameAll,  GetEpisodes, RenameSelected  } from "../wailsjs/go/main/App";
 import {WindowSetTitle} from "../wailsjs/runtime/runtime"
 import Sortable from 'sortablejs';
-import {React, useRef, useEffect } from 'react'
+import {useRef, useEffect, useState} from 'react'
+import * as React from 'react';
+import Button from '@mui/material/Button';
+import Input from '@mui/material/Input';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 // TODO: добавить другие источники API
 // сделать правильные названия серий
 let EpList
@@ -17,6 +21,19 @@ let rngcolor = "264653"
 //Setting windows tittle
 WindowSetTitle("Easy Media Renamer")
 
+// Theme of the app
+const theme = createTheme({
+    palette: {
+      primary: {
+        main: '#669bbc', // blue
+      },
+      secondary: {
+        main: '#dc004e', // red
+      },
+    },
+  });
+  
+
 //html rendering
 function App() {
     
@@ -24,22 +41,40 @@ function App() {
 
     useEffect(() => {
         if (listElemRef.current) {
+            //making list sortable
             Sortable.create(listElemRef.current)
         }
     }, []);
 
+
+        const [inputValue, setInputValue] = useState('');
+      
+        const handleChange = (event) => {
+          setInputValue(event.target.value);
+        };
+      
+        const handleSubmit = async () => {
+          await CallSeacrhShowGo(inputValue)
+        };
+
     return (
+        <ThemeProvider theme={theme}>
         <div id="App">
             <div>
+
             <div className="rename-btn-section">
-                    <button className="btn-chooser" onClick={openDirectory}>Directory Chooser</button>
-                    <button className="btn-chooser" onClick={CallRenameAllGo}>Rename all</button>
-                    <button className="btn-chooser" onClick={renameSelected}>Rename selected</button>
+                    <Button variant="contained" className="btn-chooser" onClick={openDirectory}>Directory Chooser</Button>
+                    <Button variant="contained" className="btn-chooser" onClick={CallRenameAllGo}>Rename all</Button>
+                    <Button variant="contained" className="btn-chooser" onClick={renameSelected}>Rename selected</Button>
             </div>
 
             <div className="input-wrapper">
-                <input className="user-input-search" type="text" placeholder="Show name"></input>
-                <button className="srch-btn" onClick={CallSeacrhShowGo}><i className="fa-solid fa-magnifying-glass"></i></button>
+                <Input className="user-input-search" type="text" placeholder="Show name" value={inputValue} onChange={handleChange} onKeyUp={event => {
+                if (event.key === 'Enter') {
+                  handleSubmit()
+                }
+              }}></Input>
+                <Button variant="outlined" className="srch-btn" onClick={handleSubmit}><i className="fa-solid fa-magnifying-glass"></i></Button>
             </div>
 
             <div className="search-modal">
@@ -64,6 +99,7 @@ function App() {
             </div>
             </div>
         </div>
+        </ThemeProvider>
     )
 }
 
@@ -95,12 +131,9 @@ async function openDirectory() {
     }
 }
 //Calling an api
-async function CallSeacrhShowGo(){
-
-    let showTitle = document.querySelector(".user-input-search")
-
-    if (showTitle.value) {
-        showList = await SearchShow(showTitle.value)
+async function CallSeacrhShowGo(input){
+    if (input) {
+        showList = await SearchShow(input)
         
         await renderShowList(showList)
     }
