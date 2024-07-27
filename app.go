@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"strconv"
 	"log"
 	"net/http"
 	"os"
@@ -64,19 +63,19 @@ func (a *App) SearchShow(show string) ([]Show){
 	
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Ошибка при выполнении запроса: %v", err)
+		log.Fatalf("%v", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("Ошибка при чтении ответа: %v", err)
+		log.Fatalf("%v", err)
 	}
 	
 
 	var shows []Show
 	if err := json.Unmarshal(body, &shows); err != nil {
-		log.Fatalf("Ошибка при декодировании JSON: %v", err)
+		log.Fatalf("%v", err)
 	}
 	
 	return shows
@@ -154,10 +153,9 @@ func (a *App)RenameAllGO(fileNamelist[]string) {
 	if fileNamelist != nil && episodeList != nil {
 		for index, file := range fileNamelist {
 			ext := filepath.Ext(file)
-			episodeNumber := index+1
-			enS := strconv.Itoa(episodeNumber)
 			
-			newfile := userDIR+"\\"+enS+". "+episodeList[index]+ext
+			
+			newfile := userDIR+"\\"+episodeList[index]+ext
 			oldfile := userDIR+"\\"+fileNamelist[index]
 			
 			e := os.Rename(oldfile, newfile) 
