@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strconv"
 	"log"
 	"net/http"
@@ -56,25 +56,19 @@ func (a *App) OpenDirectoryDialog() (string, error) {
 
 }
 
-func (a *App) JsPrintLn(console string) {
-	fmt.Println("js_side: "+console)
-}
 
 func (a *App) SearchShow(show string) ([]Show){
 	url := "https://api.tvmaze.com/search/shows?q="+show 
 	
 	
 	
-
-	// Выполнение HTTP GET запроса
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatalf("Ошибка при выполнении запроса: %v", err)
 	}
 	defer resp.Body.Close()
 
-	// Чтение и декодирование ответа
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("Ошибка при чтении ответа: %v", err)
 	}
@@ -89,29 +83,28 @@ func (a *App) SearchShow(show string) ([]Show){
 	
 }
 
-//структура для json'a и список эпизодов
 var episodes []Episode
 var episodeList = []string{}
 
-func (a *App) GetEpisodes(showID int) []string{
+func (a *App) GetEpisodesGO(showID int) []string{
 	episodeList = nil
 	url := fmt.Sprintf("https://api.tvmaze.com/shows/%d/episodes", showID)
 	
 	resp, err := http.Get(url)
 
 	if err != nil {
-		log.Fatalf("Ошибка при выполнении запроса: %v", err)
+		log.Fatalf("%v", err)
 	}
 	defer resp.Body.Close()
 	
-	// Чтение и декодирование ответа
-	body, err := ioutil.ReadAll(resp.Body)
+	
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("Ошибка при чтении ответа: %v", err)
+		log.Printf("%v", err)
 	}
 
 	if err := json.Unmarshal(body, &episodes); err != nil {
-		log.Printf("Ошибка при декодировании JSON: %v", err)
+		log.Printf("%v", err)
 	}
 	
 	
@@ -123,7 +116,7 @@ func (a *App) GetEpisodes(showID int) []string{
 	
 	return episodeList
 }
-//функция для очистки имени эпизода от специальных символов которые не поддерживаются WINDOWS
+//clean name from special characters.
 func (a *App) cleanName(name string)string{
 	specialChars := []string{"<", ">", ":", "\"", "/", "\\", "|", "?", "*", "?"}
 	for _, char := range specialChars {
@@ -133,12 +126,12 @@ func (a *App) cleanName(name string)string{
 	}
 	return name
 }
-// пути и имена файлов юзера
+
 var file_names_list = []string{}
 var file_path_list  = []string{}
 var userDIR string
 
-func (a *App) FilesInDirectoryHandler(directory string)[]string{
+func (a *App) FilesInDirectoryHandlerGO(directory string)[]string{
 	file_names_list = nil
 	userDIR = directory
 	files, err := os.ReadDir(directory)
@@ -156,7 +149,7 @@ func (a *App) FilesInDirectoryHandler(directory string)[]string{
 
 }
 
-func (a *App)RenameAll(fileNamelist[]string) {
+func (a *App)RenameAllGO(fileNamelist[]string) {
 	
 	if fileNamelist != nil && episodeList != nil {
 		for index, file := range fileNamelist {
@@ -178,7 +171,7 @@ func (a *App)RenameAll(fileNamelist[]string) {
 	
 }
 
-func (a *App)RenameSelected(originalFileName string, newFileName string){
+func (a *App)RenameSelectedGO(originalFileName string, newFileName string){
 
 	originalFilePath := userDIR+"\\"+originalFileName
 	ext := filepath.Ext(originalFilePath)
