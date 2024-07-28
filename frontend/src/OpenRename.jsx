@@ -60,6 +60,7 @@ async function renameSelected(){
         await RenameSelectedGO(selectFromUserFiles, selectFromApi)
         let file_name_list = await FilesInDirectoryHandlerGO(userDir)
         await renderList(file_name_list)
+        selectFromUserFiles = null
     }
 }
 
@@ -100,7 +101,7 @@ export async function addListenersForFiles(selector){
 
         userElements[i].addEventListener("click", (e)=>{
 
-            //beggining of the search, getting an id of a show
+            //beginning of the search, getting an id of a show
             //passing to the render episode func
             let ElemenClassList = e.target.classList
             if (selector == ".show-from-api"){

@@ -143,8 +143,7 @@ func (a *App) FilesInDirectoryHandlerGO(directory string)[]string{
 		file_names_list = append(file_names_list, file.Name())
 		file_path_list = append(file_path_list, filepath.Join(directory, file.Name()))
 	}
-	fmt.Println(file_names_list)
-
+	
 	return file_names_list
 
 }
@@ -186,12 +185,13 @@ func (a *App)RenameSelectedGO(originalFileName string, newFileName string){
 	ext := filepath.Ext(originalFilePath)
 	newFilePath := userDIR+"\\"+newFileName+ext
 	
-	fmt.Println(originalFileName, file_names_list)
 	
-	if !stringInSlice(newFileName, file_names_list){
+	
+	if !stringInSlice(newFileName+ext, file_names_list){
 		e := os.Rename(originalFilePath, newFilePath)
 		if e != nil { 
 			log.Fatal(e)
 		}
 	}
+	
 }
