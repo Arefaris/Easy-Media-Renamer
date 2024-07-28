@@ -143,41 +143,55 @@ func (a *App) FilesInDirectoryHandlerGO(directory string)[]string{
 		file_names_list = append(file_names_list, file.Name())
 		file_path_list = append(file_path_list, filepath.Join(directory, file.Name()))
 	}
+	fmt.Println(file_names_list)
 
 	return file_names_list
 
 }
 
+func stringInSlice(a string, list []string) bool {
+    for _, b := range list {
+        if b == a {
+            return true
+        }
+    }
+    return false
+}
+
 func (a *App)RenameAllGO(fileNamelist[]string) {
-	
-	if fileNamelist != nil && episodeList != nil {
+	if len(fileNamelist) > 0 && len(episodeList) > 0 {
+
 		for index, file := range fileNamelist {
 			ext := filepath.Ext(file)
-			
-			
 			newfile := userDIR+"\\"+episodeList[index]+ext
 			oldfile := userDIR+"\\"+fileNamelist[index]
-			
-			e := os.Rename(oldfile, newfile) 
+
+			//checking if name is already exist in a folder, if not, rename
+			if !stringInSlice(episodeList[index]+ext, file_names_list){
+				e := os.Rename(oldfile, newfile)
+				if e != nil { 
+					log.Fatal(e)
+				}
+				fmt.Println(oldfile, "changed to: ", newfile)
+		}
 	
-			if e != nil { 
-				log.Fatal(e) 
-			}
-			fmt.Println(oldfile, "changed to: ", newfile)
 		}
 	}
 	
 }
 
 func (a *App)RenameSelectedGO(originalFileName string, newFileName string){
-
+	
 	originalFilePath := userDIR+"\\"+originalFileName
 	ext := filepath.Ext(originalFilePath)
 	newFilePath := userDIR+"\\"+newFileName+ext
 	
-	e := os.Rename(originalFilePath, newFilePath) 
+	fmt.Println(originalFileName, file_names_list)
 	
-			if e != nil { 
-				log.Fatal(e) 
-			} 
+	if !stringInSlice(newFileName, file_names_list){
+		e := os.Rename(originalFilePath, newFilePath)
+		if e != nil { 
+			log.Fatal(e)
+		}
+	}
 }
