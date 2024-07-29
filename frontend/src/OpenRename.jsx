@@ -28,10 +28,13 @@ async function openDirectory() {
     try {
         //this will basicly give us directoy path
         userDir = await OpenDirectoryDialog();
-        //getting file list in directory
-        let file_name_list = await FilesInDirectoryHandlerGO(userDir)
-        //rendering file list in our html
-        await renderList(file_name_list)
+        if(userDir){
+            //getting file list in directory
+            let file_name_list = await FilesInDirectoryHandlerGO(userDir)
+            //rendering file list in our html
+            await renderList(file_name_list)
+        }
+        
     } catch (error) {
         console.error("Failed to open directory dialog:", error);
     }
