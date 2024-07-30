@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"strconv"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -32,6 +33,7 @@ type Episode struct {
 	ID     int    `json:"id"`
 	Name   string `json:"name"`
 	Season int    `json:"season"`
+	Number int `json:"number"`
 }
 
 // NewApp creates a new App application struct
@@ -109,8 +111,14 @@ func (a *App) GetEpisodesGO(showID int) []string{
 	
 	for _, episode := range episodes{
 		cleanEpisode := a.cleanName(episode.Name)
-	
-		episodeList = append(episodeList, cleanEpisode)
+		epnumber := strconv.Itoa(episode.Number)
+
+		if (episode.Number < 10){
+			epnumber = "0"+epnumber
+		}
+		
+		epseason := strconv.Itoa(episode.Season)
+		episodeList = append(episodeList, cleanEpisode+" - "+epseason+"x"+epnumber)
 	}
 	
 	return episodeList
