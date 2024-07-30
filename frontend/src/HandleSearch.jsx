@@ -4,7 +4,9 @@ import {SearchShow} from "../wailsjs/go/main/App";
 import React, {useRef, useState, useEffect} from 'react'
 import { addListenersForFiles } from './OpenRename';
 import Sortable from 'sortablejs';
-
+import SelectApi from './SelectApi';
+import {selectedApi} from "./SelectApi"
+let api
 const Search = () => {
         const [inputValue, setInputValue] = useState('');
 
@@ -28,7 +30,9 @@ const Search = () => {
 
     return(
         <>
+        
         <div className="input-wrapper">
+                <SelectApi />
                 <Input className="user-input-search" type="text" placeholder="Show name" value={inputValue} onChange={handleChange} onKeyUp={event => {
                 if (event.key === 'Enter') {
                   handleSubmit()
@@ -66,8 +70,16 @@ const Search = () => {
 
 //Calling an api
 const CallSearchShowGo = async (input) => {
+    api = selectedApi
     if (input) {
-        let showList = await SearchShow(input)
+        
+        
+        if (!api){
+            api = "TVmaze"
+        }
+
+        let showList = await SearchShow(input, api)
+
         await renderShowList(showList)
     }
     

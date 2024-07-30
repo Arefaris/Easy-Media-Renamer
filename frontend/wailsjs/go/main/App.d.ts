@@ -12,4 +12,4 @@ export function RenameAllGO(arg1:Array<string>):Promise<void>;
 
 export function RenameSelectedGO(arg1:string,arg2:string):Promise<void>;
 
-export function SearchShow(arg1:string):Promise<Array<main.Show>>;
+export function SearchShow(arg1:string,arg2:string):Promise<Array<main.Show>>;

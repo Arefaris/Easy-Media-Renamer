@@ -22,6 +22,6 @@ export function RenameSelectedGO(arg1, arg2) {
   return window['go']['main']['App']['RenameSelectedGO'](arg1, arg2);
 }
 
-export function SearchShow(arg1) {
-  return window['go']['main']['App']['SearchShow'](arg1);
+export function SearchShow(arg1, arg2) {
+  return window['go']['main']['App']['SearchShow'](arg1, arg2);
 }

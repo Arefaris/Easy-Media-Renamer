@@ -58,7 +58,16 @@ func (a *App) OpenDirectoryDialog() (string, error) {
 }
 
 
-func (a *App) SearchShow(show string) ([]Show){
+func (a *App) SearchShow(show string, apitype string) ([]Show){
+	shows := []Show{}
+	fmt.Println(show)
+	if apitype == "TVmaze"{
+		shows = tvmazeApi(show)
+	}
+	return shows
+}
+
+func tvmazeApi(show string)([]Show){
 	url := "https://api.tvmaze.com/search/shows?q="+show 
 	
 	
@@ -81,7 +90,6 @@ func (a *App) SearchShow(show string) ([]Show){
 	}
 	
 	return shows
-	
 }
 
 var episodes []Episode
@@ -112,13 +120,19 @@ func (a *App) GetEpisodesGO(showID int) []string{
 	for _, episode := range episodes{
 		cleanEpisode := a.cleanName(episode.Name)
 		epnumber := strconv.Itoa(episode.Number)
+		epseason := strconv.Itoa(episode.Season)
 
 		if (episode.Number < 10){
 			epnumber = "0"+epnumber
 		}
+
+		if (episode.Season < 10){
+			epseason = "0"+epseason
+		}
 		
-		epseason := strconv.Itoa(episode.Season)
-		episodeList = append(episodeList, cleanEpisode+" - "+epseason+"x"+epnumber)
+		
+		
+		episodeList = append(episodeList, cleanEpisode+" - s"+epseason+"e"+epnumber)
 	}
 	
 	return episodeList

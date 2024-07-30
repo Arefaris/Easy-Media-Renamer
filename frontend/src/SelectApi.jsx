@@ -1,0 +1,64 @@
+import React from 'react'
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+
+
+export let selectedApi
+
+export default function SelectApi() {
+
+  const [api, setApi] = React.useState('');
+
+  const handleChange = (event) => {
+    setApi(event.target.value);
+    selectedApi = event.target.value
+
+  };
+
+  return (
+    <Box sx={{ minWidth: 80}}>
+      <FormControl variant="standard" fullWidth>
+        
+        <InputLabel id="demo-simple-select-label"></InputLabel>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={api}
+          label="api"
+          color="primary"
+          onChange={handleChange}
+          sx={{
+            '&:before': {
+            borderColor: '#669bbc',
+        },
+        '&:after': {
+            borderColor: '#669bbc',
+        },
+            color: '#e5e5e5',
+            '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#669bbc'
+            },
+            '& .MuiSvgIcon-root': {
+                color: '#669bbc'
+            }, 
+            '&:not(.Mui-disabled):hover::before': {
+            borderColor: '#669bbc',
+            },
+            root: {
+                color: '#669bbc',
+            },
+        }}
+    
+        >
+          <MenuItem value={"TVmaze"}>TVmaze</MenuItem>
+          <MenuItem value={20}>Twenty</MenuItem>
+          <MenuItem value={30}>Thirty</MenuItem>
+        </Select>
+      </FormControl>
+    </Box>
+  );
+}
+
