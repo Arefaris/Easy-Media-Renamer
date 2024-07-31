@@ -12,8 +12,8 @@ import (
 	"strings"
 	"strconv"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"github.com/joho/godotenv"
 	"go.felesatra.moe/anidb"
+	"apikeys"
 )
 
 
@@ -44,11 +44,9 @@ type Episode struct {
 
 var clientAniDb anidb.Client
 func loadENV(){
-	err := godotenv.Load("apikeys.env")
-  if err != nil {
-    log.Fatal("Error loading .env file")
+	apikeys.LoadApiKeys("123")
   }
-}
+
 
 func loadClients(){
 	clientAniDb = anidb.Client{
@@ -62,6 +60,7 @@ func loadClients(){
 func NewApp() *App {
   	loadENV()
   	loadClients()
+	
 	return &App{}
 }
 
