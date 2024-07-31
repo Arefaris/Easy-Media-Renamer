@@ -12,12 +12,17 @@ import (
 	"strings"
 	"strconv"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/joho/godotenv"
+	"go.felesatra.moe/anidb"
 )
+
+
 
 // App struct
 type App struct {
 	ctx context.Context
 }
+
 
 type Show struct {
 	Score float64 `json:"score"`
@@ -36,8 +41,27 @@ type Episode struct {
 	Number int `json:"number"`
 }
 
+
+var clientAniDb anidb.Client
+func loadENV(){
+	err := godotenv.Load("apikeys.env")
+  if err != nil {
+    log.Fatal("Error loading .env file")
+  }
+}
+
+func loadClients(){
+	clientAniDb = anidb.Client{
+		Name: os.Getenv("ANI_DB"), 
+		Version: 1,
+	}
+}
+
+
 // NewApp creates a new App application struct
 func NewApp() *App {
+  	loadENV()
+  	loadClients()
 	return &App{}
 }
 
@@ -60,11 +84,46 @@ func (a *App) OpenDirectoryDialog() (string, error) {
 
 func (a *App) SearchShow(show string, apitype string) ([]Show){
 	shows := []Show{}
-	fmt.Println(show)
+
+	//anime, err := clientAniDb.RequestAnime(17635)
+	
+	
 	if apitype == "TVmaze"{
 		shows = tvmazeApi(show)
+	}else if apitype == "AniDB"{
+		shows = aniDbApi(show)
 	}
 	return shows
+}
+
+func aniDbApi(show string)([]Show){
+	apishow := Show{}
+	apishows := []Show{}
+
+	c, err := anidb.DefaultTitlesCache()
+	if err != nil {
+		panic(err)
+	}
+	defer c.SaveIfUpdated()
+
+	titles, err := c.GetTitles()
+	if err != nil {
+		panic(err)
+	}
+
+	searchTerm := show
+    for _, anime := range titles {
+        for _, title := range anime.Titles {
+            if strings.Contains(strings.ToLower(title.Name), strings.ToLower(searchTerm)) {
+                fmt.Printf("Found anime: %s (AID: %d)\n", title.Name, anime.AID)
+				apishow.Show.ID = anime.AID
+				apishow.Show.Name = title.Name
+				apishows = append(apishows, apishow)
+            }
+        }
+    }
+	return apishows
+
 }
 
 func tvmazeApi(show string)([]Show){

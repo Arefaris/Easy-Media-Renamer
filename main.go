@@ -18,7 +18,7 @@ func main() {
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:  "Easy Media Renamer",
-		Width:  640,
+		Width:  700,
 		Height: 480,
 		AssetServer: &assetserver.Options{
 			Assets: assets,

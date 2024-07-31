@@ -10,8 +10,8 @@ export let selectedApi
 
 export default function SelectApi() {
 
-  const [api, setApi] = React.useState('');
-
+  let [api, setApi] = React.useState('');
+  
   const handleChange = (event) => {
     setApi(event.target.value);
     selectedApi = event.target.value
@@ -24,6 +24,7 @@ export default function SelectApi() {
         
         <InputLabel id="demo-simple-select-label"></InputLabel>
         <Select
+          defaultValue="TVmaze"
           labelId="demo-simple-select-label"
           id="demo-simple-select"
           value={api}
@@ -54,7 +55,7 @@ export default function SelectApi() {
     
         >
           <MenuItem value={"TVmaze"}>TVmaze</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
+          <MenuItem value={"AniDB"}>AniDB</MenuItem>
           <MenuItem value={30}>Thirty</MenuItem>
         </Select>
       </FormControl>
