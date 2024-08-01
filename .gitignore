@@ -2,3 +2,6 @@ build/bin
 node_modules
 frontend/dist
 apikeys.env
+apikeys/apikeys.go
+apikeys/apikeys.go
+/apikeys
