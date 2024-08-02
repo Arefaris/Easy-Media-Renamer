@@ -5,7 +5,6 @@ go 1.21
 toolchain go1.22.5
 
 require (
-	github.com/joho/godotenv v1.5.1
 	github.com/wailsapp/wails/v2 v2.9.1
 	go.felesatra.moe/anidb v1.2.2
 )

@@ -12,7 +12,6 @@ import (
 	"strings"
 	"strconv"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"github.com/joho/godotenv"
 	"go.felesatra.moe/anidb"
 )
 
@@ -41,26 +40,40 @@ type Episode struct {
 	Number int `json:"number"`
 }
 
+type Api struct {
+	NameAniDb string `json:"anidb"`
+	Anidbv int `json:"anidbv"`
 
-var clientAniDb anidb.Client
-func loadENV(){
-	err := godotenv.Load("apikeys.env")
-  if err != nil {
-    log.Fatal("Error loading .env file")
-  }
 }
 
+
+var clientAniDb anidb.Client
+var api Api
+
 func loadClients(){
+	//opening our json
+	jsonFile, err := os.Open("./src/assets/keys.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+	//converting to bytes
+	byteValue, err := io.ReadAll(jsonFile)
+	
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	json.Unmarshal(byteValue, &api)
+
 	clientAniDb = anidb.Client{
-		Name: os.Getenv("ANI_DB"), 
-		Version: 1,
+		Name: api.NameAniDb, 
+		Version: api.Anidbv,
 	}
 }
 
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-  	loadENV()
   	loadClients()
 	return &App{}
 }

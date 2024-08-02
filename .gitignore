@@ -2,3 +2,4 @@ build/bin
 node_modules
 frontend/dist
 apikeys.env
+frontend/src/assets/keys.json
