@@ -9,13 +9,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"strconv"
+	"strings"
+
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.felesatra.moe/anidb"
 )
-
-
 
 // App struct
 type App struct {
@@ -52,13 +51,15 @@ var api Api
 
 func loadClients(){
 	//opening our json
-	jsonFile, err := os.Open("./src/assets/keys.json")
+	jsonFile, err := os.Open("keys.json")
 	if err != nil {
 		fmt.Println(err)
 	}
 	//converting to bytes
 	byteValue, err := io.ReadAll(jsonFile)
 	
+
+
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -69,6 +70,8 @@ func loadClients(){
 		Name: api.NameAniDb, 
 		Version: api.Anidbv,
 	}
+	
+
 }
 
 
@@ -94,17 +97,18 @@ func (a *App) OpenDirectoryDialog() (string, error) {
 
 }
 
-
-func (a *App) SearchShow(show string, apitype string) ([]Show){
+var apitype string
+func (a *App) SearchShow(show string, apis string) ([]Show){
 	shows := []Show{}
 
 	//anime, err := clientAniDb.RequestAnime(17635)
 	
-	
+	apitype = apis
 	if apitype == "TVmaze"{
 		shows = tvmazeApi(show)
 	}else if apitype == "AniDB"{
 		shows = aniDbApi(show)
+		
 	}
 	return shows
 }
@@ -128,7 +132,6 @@ func aniDbApi(show string)([]Show){
     for _, anime := range titles {
         for _, title := range anime.Titles {
             if strings.Contains(strings.ToLower(title.Name), strings.ToLower(searchTerm)) {
-                fmt.Printf("Found anime: %s (AID: %d)\n", title.Name, anime.AID)
 				apishow.Show.ID = anime.AID
 				apishow.Show.Name = title.Name
 				apishows = append(apishows, apishow)
@@ -168,6 +171,40 @@ var episodes []Episode
 var episodeList = []string{}
 
 func (a *App) GetEpisodesGO(showID int) []string{
+	if apitype == "TVmaze"{
+		episodeList = a.EpisodesTvMaze(showID)
+	}else if apitype == "AniDB"{
+		anime, err := clientAniDb.RequestAnime(showID)
+		if err != nil {
+			panic(err)
+		}
+		namesNepisodes := map[int]string{}
+		for _, Episode := range anime.Episodes {
+			
+			//fmt.Println(Episode.Titles[len(Episode.Titles)-2:], Episode.EpNo)
+			for _, title := range Episode.Titles {
+				if (title.Lang == "en"){
+					n , _ := strconv.Atoi(Episode.EpNo)
+					
+					//fmt.Println(title.Title, Episode.EpNo)
+					namesNepisodes[n] = title.Title
+					
+			}
+				}
+				sortedList := []string{}
+				for i := 1; i < len(namesNepisodes); i++ {
+					sortedList = append(sortedList, namesNepisodes[i])
+				}
+				
+				fmt.Println(sortedList)
+				
+		}
+	}
+	
+	return episodeList
+}
+
+func (a *App) EpisodesTvMaze(showID int) []string{ 
 	episodeList = nil
 	url := fmt.Sprintf("https://api.tvmaze.com/shows/%d/episodes", showID)
 	
@@ -208,6 +245,7 @@ func (a *App) GetEpisodesGO(showID int) []string{
 	}
 	
 	return episodeList
+
 }
 //clean name from special characters.
 func (a *App) cleanName(name string)string{
