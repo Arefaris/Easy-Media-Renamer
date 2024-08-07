@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.felesatra.moe/anidb"
 )
@@ -101,8 +100,6 @@ var apitype string
 func (a *App) SearchShow(show string, apis string) ([]Show){
 	shows := []Show{}
 
-	//anime, err := clientAniDb.RequestAnime(17635)
-	
 	apitype = apis
 	if apitype == "TVmaze"{
 		shows = tvmazeApi(show)
@@ -114,6 +111,7 @@ func (a *App) SearchShow(show string, apis string) ([]Show){
 }
 
 func aniDbApi(show string)([]Show){
+	
 	apishow := Show{}
 	apishows := []Show{}
 
@@ -171,34 +169,40 @@ var episodes []Episode
 var episodeList = []string{}
 
 func (a *App) GetEpisodesGO(showID int) []string{
+	
 	if apitype == "TVmaze"{
 		episodeList = a.EpisodesTvMaze(showID)
 	}else if apitype == "AniDB"{
 		anime, err := clientAniDb.RequestAnime(showID)
+		
 		if err != nil {
 			panic(err)
 		}
 		namesNepisodes := map[int]string{}
 		for _, Episode := range anime.Episodes {
 			
-			//fmt.Println(Episode.Titles[len(Episode.Titles)-2:], Episode.EpNo)
+			
 			for _, title := range Episode.Titles {
 				if (title.Lang == "en"){
 					n , _ := strconv.Atoi(Episode.EpNo)
 					
-					//fmt.Println(title.Title, Episode.EpNo)
+					
 					namesNepisodes[n] = title.Title
 					
 			}
 				}
+
 				sortedList := []string{}
 				for i := 1; i < len(namesNepisodes); i++ {
-					sortedList = append(sortedList, namesNepisodes[i])
+					epname := a.cleanName(namesNepisodes[i])
+					epnumber := strconv.Itoa(i)
+					sortedList = append(sortedList, epname + " - " + epnumber)
 				}
 				
-				fmt.Println(sortedList)
+				episodeList = sortedList
 				
 		}
+		
 	}
 	
 	return episodeList
