@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.felesatra.moe/anidb"
 )
@@ -301,14 +300,14 @@ func stringInSlice(a string, list []string) bool {
 
 func (a *App)RenameAllGO(fileNamelist[]string) {
 	if len(fileNamelist) > 0 && len(episodeList) > 0 {
-
-		for index, file := range fileNamelist {
-			ext := filepath.Ext(file)
-			newfile := userDIR+"\\"+episodeList[index]+ext
-			oldfile := userDIR+"\\"+fileNamelist[index]
+		fmt.Println(episodeList)
+		for i := 0; i < len(episodeList)&&i < len(fileNamelist); i++ {
+			ext := filepath.Ext(fileNamelist[i])
+			newfile := userDIR+"\\"+episodeList[i]+ext
+			oldfile := userDIR+"\\"+fileNamelist[i]
 
 			//checking if name is already exist in a folder, if not, rename
-			if !stringInSlice(episodeList[index]+ext, file_names_list){
+			if !stringInSlice(episodeList[i]+ext, file_names_list){
 				e := os.Rename(oldfile, newfile)
 				if e != nil { 
 					log.Fatal(e)
