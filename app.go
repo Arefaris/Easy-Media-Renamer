@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,9 +12,13 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.felesatra.moe/anidb"
 )
+
+//go:embed keys.json
+var jsonData []byte
 
 // App struct
 type App struct {
@@ -50,20 +55,8 @@ var api Api
 
 func loadClients(){
 	//opening our json
-	jsonFile, err := os.Open("keys.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	//converting to bytes
-	byteValue, err := io.ReadAll(jsonFile)
-	
 
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	json.Unmarshal(byteValue, &api)
+	json.Unmarshal(jsonData, &api)
 
 	clientAniDb = anidb.Client{
 		Name: api.NameAniDb, 
