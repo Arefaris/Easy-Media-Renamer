@@ -10,7 +10,7 @@ export let selectedApi
 
 export default function SelectApi() {
 
-  let [api, setApi] = React.useState('');
+  let [api, setApi] = React.useState('TVmaze');
   
   const handleChange = (event) => {
     setApi(event.target.value);

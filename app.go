@@ -157,6 +157,9 @@ func tvmazeApi(show string)([]Show){
 	return shows
 }
 
+
+
+
 var episodes []Episode
 var episodeList = []string{}
 
