@@ -166,36 +166,7 @@ func (a *App) GetEpisodesGO(showID int) []string{
 	if apitype == "TVmaze"{
 		episodeList = a.EpisodesTvMaze(showID)
 	}else if apitype == "AniDB"{
-		anime, err := clientAniDb.RequestAnime(showID)
-		
-		if err != nil {
-			panic(err)
-		}
-		namesNepisodes := map[int]string{}
-		for _, Episode := range anime.Episodes {
-			
-			
-			for _, title := range Episode.Titles {
-				if (title.Lang == "en"){
-					n , _ := strconv.Atoi(Episode.EpNo)
-					
-					
-					namesNepisodes[n] = title.Title
-					
-			}
-				}
-
-				sortedList := []string{}
-				for i := 1; i < len(namesNepisodes); i++ {
-					epname := a.cleanName(namesNepisodes[i])
-					epnumber := strconv.Itoa(i)
-					sortedList = append(sortedList, epname + " - " + epnumber)
-				}
-				
-				episodeList = sortedList
-				
-		}
-		
+		episodeList = a.EpisodesAniDb(showID)
 	}
 	
 	return episodeList
@@ -244,6 +215,48 @@ func (a *App) EpisodesTvMaze(showID int) []string{
 	return episodeList
 
 }
+
+func (a *App) EpisodesAniDb(showID int) []string{
+
+		anime, err := clientAniDb.RequestAnime(showID)
+		
+		if err != nil {
+			panic(err)
+		}
+		namesNepisodes := map[int]string{}
+		for _, Episode := range anime.Episodes {
+			
+			
+			for _, title := range Episode.Titles {
+				if (title.Lang == "en"){
+					n , _ := strconv.Atoi(Episode.EpNo)
+					
+					
+					namesNepisodes[n] = title.Title
+					
+			}
+				}
+
+				sortedList := []string{}
+				for i := 1; i < len(namesNepisodes); i++ {
+					epname := a.cleanName(namesNepisodes[i])
+					
+			
+					epnumber := strconv.Itoa(i)
+
+					if (i < 10){
+						epnumber = "0"+epnumber
+					}
+
+					sortedList = append(sortedList, epname + " - " + epnumber)
+				}
+				
+				episodeList = sortedList
+				
+		}
+		return episodeList
+}
+
 //clean name from special characters.
 func (a *App) cleanName(name string)string{
 	specialChars := []string{"<", ">", ":", "\"", "/", "\\", "|", "?", "*", "?"}
