@@ -14,6 +14,7 @@ import (
 	"strings"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.felesatra.moe/anidb"
+	tmdb "github.com/cyruzin/golang-tmdb"
 )
 
 //go:embed keys.json
@@ -45,7 +46,7 @@ type Episode struct {
 type Api struct {
 	NameAniDb string `json:"anidb"`
 	Anidbv int `json:"anidbv"`
-
+	Tmdb string `json:"tmdb"`
 }
 
 
@@ -98,8 +99,60 @@ func (a *App) SearchShow(show string, apis string) ([]Show){
 	}else if apitype == "AniDB"{
 		shows = aniDbApi(show)
 		
-	}
+	}else if apitype == "TMDB"{
+		shows = tmdDbApi(show)
+	}	
 	return shows
+}
+
+func tmdDbApi(show string)([]Show){
+
+	apishow := Show{}
+	apishows := []Show{}
+
+	tmdbClient, err := tmdb.Init(api.Tmdb)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	options := make(map[string]string)
+	options["language"] = "EN"
+
+	// Multi Search
+	search, err := tmdbClient.GetSearchMulti(show, options)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	
+	// Iterate
+	for _, v := range search.Results {
+
+		if v.MediaType == "movie" {
+			
+			if (len(v.Title) > 0){
+				
+				apishow.Show.ID = int(v.ID)
+				apishow.Show.Name = v.Title 
+				apishows = append(apishows, apishow)
+				
+			}
+			
+		} 
+		 if v.MediaType == "tv" {
+				
+				
+				apishow.Show.ID = int(v.ID)
+				apishow.Show.Name = v.Name 
+				apishows = append(apishows, apishow)
+			
+			
+		} 
+	}
+	
+	return apishows
 }
 
 func aniDbApi(show string)([]Show){
@@ -169,10 +222,57 @@ func (a *App) GetEpisodesGO(showID int) []string{
 		episodeList = a.EpisodesTvMaze(showID)
 	}else if apitype == "AniDB"{
 		episodeList = a.EpisodesAniDb(showID)
+	}else if apitype == "TMDB"{
+		episodeList = a.EpisodesTmDb(showID)
 	}
 	
 	return episodeList
 }
+
+func (a *App) EpisodesTmDb(showId int) []string{
+	episodeList = nil
+	tmdbClient, err := tmdb.Init(api.Tmdb)
+
+	
+	if err != nil {
+		fmt.Println(err)
+
+	}
+	
+
+	options := make(map[string]string)
+	options["language"] = "EN"
+	
+	details, _ := tmdbClient.GetTVDetails(showId, options)
+	
+	
+	// Перебираем все сезоны и эпизоды
+	for _, season := range details.Seasons {
+		episodes, err := tmdbClient.GetTVSeasonDetails(showId, season.SeasonNumber, nil)
+		if err != nil {
+			log.Fatalf("Error getting season details: %v", err)
+		}
+
+		
+		for _, episode := range episodes.Episodes {
+			epseason := strconv.Itoa(season.SeasonNumber)
+			epnumber := strconv.Itoa(episode.EpisodeNumber)
+			cleanEpisode := a.cleanName(episode.Name)
+
+			if (episode.EpisodeNumber < 10){
+				epnumber = "0"+epnumber
+			}
+	
+			if (episode.SeasonNumber < 10){
+				epseason = "0"+epseason
+			}
+			episodeList = append(episodeList, cleanEpisode+" - s"+epseason+"e"+epnumber)
+		}
+	}
+	return episodeList
+
+}
+
 
 func (a *App) EpisodesTvMaze(showID int) []string{ 
 	episodeList = nil
@@ -205,7 +305,7 @@ func (a *App) EpisodesTvMaze(showID int) []string{
 			epnumber = "0"+epnumber
 		}
 
-		if (episode.Season < 10){
+		if (episode.Season < 10 && episode.Season != 0){
 			epseason = "0"+epseason
 		}
 		

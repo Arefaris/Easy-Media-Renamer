@@ -4,6 +4,8 @@ import {main} from '../models';
 
 export function EpisodesAniDb(arg1:number):Promise<Array<string>>;
 
+export function EpisodesTmDb(arg1:number):Promise<Array<string>>;
+
 export function EpisodesTvMaze(arg1:number):Promise<Array<string>>;
 
 export function FilesInDirectoryHandlerGO(arg1:string):Promise<Array<string>>;

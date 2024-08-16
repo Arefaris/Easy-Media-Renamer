@@ -6,6 +6,10 @@ export function EpisodesAniDb(arg1) {
   return window['go']['main']['App']['EpisodesAniDb'](arg1);
 }
 
+export function EpisodesTmDb(arg1) {
+  return window['go']['main']['App']['EpisodesTmDb'](arg1);
+}
+
 export function EpisodesTvMaze(arg1) {
   return window['go']['main']['App']['EpisodesTvMaze'](arg1);
 }

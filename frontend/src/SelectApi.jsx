@@ -56,7 +56,7 @@ export default function SelectApi() {
         >
           <MenuItem value={"TVmaze"}>TVmaze</MenuItem>
           <MenuItem value={"AniDB"}>AniDB</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
+          <MenuItem value={"TMDB"}>TMDB</MenuItem>
         </Select>
       </FormControl>
     </Box>
