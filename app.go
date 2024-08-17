@@ -406,8 +406,8 @@ func (a *App)RenameAllGO(fileNamelist[]string) {
 		fmt.Println(episodeList)
 		for i := 0; i < len(episodeList)&&i < len(fileNamelist); i++ {
 			ext := filepath.Ext(fileNamelist[i])
-			newfile := userDIR+"\\"+episodeList[i]+ext
-			oldfile := userDIR+"\\"+fileNamelist[i]
+			newfile := filepath.Join(userDIR, episodeList[i]+ext)
+			oldfile := filepath.Join(userDIR, fileNamelist[i])
 
 			//checking if name is already exist in a folder, if not, rename
 			if !stringInSlice(episodeList[i]+ext, file_names_list){
@@ -424,10 +424,9 @@ func (a *App)RenameAllGO(fileNamelist[]string) {
 }
 
 func (a *App)RenameSelectedGO(originalFileName string, newFileName string){
-	
-	originalFilePath := userDIR+"\\"+originalFileName
+	originalFilePath := filepath.Join(userDIR, originalFileName)
 	ext := filepath.Ext(originalFilePath)
-	newFilePath := userDIR+"\\"+newFileName+ext
+	newFilePath := filepath.Join(userDIR, newFileName+ext)
 	
 	
 	
