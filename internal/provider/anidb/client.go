@@ -89,8 +89,9 @@ func (c *Client) Search(ctx context.Context, q string) ([]provider.Show, error) 
 
 type animeXML struct {
 	Episodes []struct {
-		EpNo   string `xml:"epno"`
-		Titles []struct {
+		EpNo    string `xml:"epno"`
+		AirDate string `xml:"airdate"`
+		Titles  []struct {
 			Lang string `xml:"lang,attr"`
 			Text string `xml:",chardata"`
 		} `xml:"title"`
@@ -168,7 +169,11 @@ func (c *Client) Episodes(ctx context.Context, id string) ([]provider.Episode, e
 				break
 			}
 		}
-		out = append(out, provider.Episode{Season: season, Number: num, Title: name, Special: special})
+		absolute := 0
+		if !special {
+			absolute = num
+		}
+		out = append(out, provider.Episode{Season: season, Number: num, Title: name, Special: special, AirDate: ep.AirDate, Absolute: absolute})
 	}
 	sort.Slice(out, func(i, j int) bool {
 		if out[i].Season == out[j].Season {

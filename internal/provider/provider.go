@@ -11,10 +11,12 @@ type Show struct {
 }
 
 type Episode struct {
-	Season  int    `json:"season"`
-	Number  int    `json:"number"`
-	Title   string `json:"title"`
-	Special bool   `json:"special"`
+	Season   int    `json:"season"`
+	Number   int    `json:"number"`
+	Title    string `json:"title"`
+	Special  bool   `json:"special"`
+	AirDate  string `json:"airdate"`
+	Absolute int    `json:"absolute"`
 }
 
 type Provider interface {

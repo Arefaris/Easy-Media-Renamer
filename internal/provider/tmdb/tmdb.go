@@ -18,12 +18,17 @@ import (
 
 type Client struct {
 	Key             string
+	Language        string
 	HTTP            *http.Client
 	IncludeSpecials bool
 }
 
-func New(key string, specials bool) *Client {
-	return &Client{Key: key, HTTP: &http.Client{Timeout: 20 * time.Second}, IncludeSpecials: specials}
+func New(key string, specials bool, languages ...string) *Client {
+	language := "en-US"
+	if len(languages) > 0 && strings.TrimSpace(languages[0]) != "" {
+		language = languages[0]
+	}
+	return &Client{Key: key, Language: language, HTTP: &http.Client{Timeout: 20 * time.Second}, IncludeSpecials: specials}
 }
 func (c *Client) Name() string     { return "TMDB" }
 func (c *Client) Configured() bool { return strings.TrimSpace(c.Key) != "" }
@@ -115,15 +120,16 @@ func (c *Client) Episodes(ctx context.Context, showID string) ([]provider.Episod
 			defer func() { <-sem }()
 			var raw struct {
 				Episodes []struct {
-					Name   string `json:"name"`
-					Number int    `json:"episode_number"`
-					Season int    `json:"season_number"`
+					Name    string `json:"name"`
+					Number  int    `json:"episode_number"`
+					Season  int    `json:"season_number"`
+					AirDate string `json:"air_date"`
 				} `json:"episodes"`
 			}
 			e := c.get(ctx, fmt.Sprintf("/tv/%d/season/%d", id, season), nil, &raw)
 			r := result{err: e}
 			for _, v := range raw.Episodes {
-				r.eps = append(r.eps, provider.Episode{Season: v.Season, Number: v.Number, Title: v.Name, Special: v.Season == 0})
+				r.eps = append(r.eps, provider.Episode{Season: v.Season, Number: v.Number, Title: v.Name, Special: v.Season == 0, AirDate: v.AirDate})
 			}
 			ch <- r
 		}(s)
@@ -143,6 +149,13 @@ func (c *Client) Episodes(ctx context.Context, showID string) ([]provider.Episod
 		}
 		return out[i].Season < out[j].Season
 	})
+	abs := 0
+	for i := range out {
+		if !out[i].Special {
+			abs++
+			out[i].Absolute = abs
+		}
+	}
 	return out, nil
 }
 func (c *Client) get(ctx context.Context, path string, params url.Values, dst any) error {
@@ -150,7 +163,7 @@ func (c *Client) get(ctx context.Context, path string, params url.Values, dst an
 		params = url.Values{}
 	}
 	params.Set("api_key", c.Key)
-	params.Set("language", "en-US")
+	params.Set("language", c.Language)
 	u := "https://api.themoviedb.org/3" + path + "?" + params.Encode()
 	req, e := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if e != nil {

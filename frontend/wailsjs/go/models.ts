@@ -5,6 +5,12 @@ export namespace config {
 	    name_template: string;
 	    media_extensions: string[];
 	    include_specials: boolean;
+	    recursive: boolean;
+	    max_depth: number;
+	    action: string;
+	    auto_match: boolean;
+	    preset: string;
+	    language: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -16,6 +22,35 @@ export namespace config {
 	        this.name_template = source["name_template"];
 	        this.media_extensions = source["media_extensions"];
 	        this.include_specials = source["include_specials"];
+	        this.recursive = source["recursive"];
+	        this.max_depth = source["max_depth"];
+	        this.action = source["action"];
+	        this.auto_match = source["auto_match"];
+	        this.preset = source["preset"];
+	        this.language = source["language"];
+	    }
+	}
+
+}
+
+export namespace match {
+	
+	export class Pair {
+	    file_index: number;
+	    episode_index: number;
+	    confidence: number;
+	    strategy: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Pair(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.file_index = source["file_index"];
+	        this.episode_index = source["episode_index"];
+	        this.confidence = source["confidence"];
+	        this.strategy = source["strategy"];
 	    }
 	}
 
@@ -26,6 +61,7 @@ export namespace media {
 	export class File {
 	    name: string;
 	    path: string;
+	    rel_path: string;
 	    size: number;
 	
 	    static createFrom(source: any = {}) {
@@ -36,6 +72,7 @@ export namespace media {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.name = source["name"];
 	        this.path = source["path"];
+	        this.rel_path = source["rel_path"];
 	        this.size = source["size"];
 	    }
 	}
@@ -55,6 +92,62 @@ export namespace media {
 	        this.to = source["to"];
 	        this.status = source["status"];
 	        this.error = source["error"];
+	    }
+	}
+	export class HistoryEntry {
+	    id: string;
+	    // Go type: time
+	    time: any;
+	    directory: string;
+	    action: string;
+	    count: number;
+	    ops: Op[];
+	
+	    static createFrom(source: any = {}) {
+	        return new HistoryEntry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.time = this.convertValues(source["time"], null);
+	        this.directory = source["directory"];
+	        this.action = source["action"];
+	        this.count = source["count"];
+	        this.ops = this.convertValues(source["ops"], Op);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	
+	export class Preset {
+	    name: string;
+	    template: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Preset(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.template = source["template"];
 	    }
 	}
 	export class Result {
@@ -101,6 +194,8 @@ export namespace provider {
 	    number: number;
 	    title: string;
 	    special: boolean;
+	    airdate: string;
+	    absolute: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Episode(source);
@@ -112,6 +207,8 @@ export namespace provider {
 	        this.number = source["number"];
 	        this.title = source["title"];
 	        this.special = source["special"];
+	        this.airdate = source["airdate"];
+	        this.absolute = source["absolute"];
 	    }
 	}
 	export class Info {
@@ -146,6 +243,31 @@ export namespace provider {
 	        this.year = source["year"];
 	        this.kind = source["kind"];
 	        this.genres = source["genres"];
+	    }
+	}
+
+}
+
+export namespace verify {
+	
+	export class Result {
+	    file: string;
+	    expected: string;
+	    actual: string;
+	    ok: boolean;
+	    error?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Result(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.file = source["file"];
+	        this.expected = source["expected"];
+	        this.actual = source["actual"];
+	        this.ok = source["ok"];
+	        this.error = source["error"];
 	    }
 	}
 

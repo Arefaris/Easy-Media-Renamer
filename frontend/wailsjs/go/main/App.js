@@ -6,12 +6,32 @@ export function ApplyRename(arg1, arg2) {
   return window['go']['main']['App']['ApplyRename'](arg1, arg2);
 }
 
+export function AutoMatch(arg1, arg2) {
+  return window['go']['main']['App']['AutoMatch'](arg1, arg2);
+}
+
+export function ClearHistory() {
+  return window['go']['main']['App']['ClearHistory']();
+}
+
+export function ComputeChecksum(arg1, arg2) {
+  return window['go']['main']['App']['ComputeChecksum'](arg1, arg2);
+}
+
 export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }
 
 export function ListEpisodes(arg1, arg2) {
   return window['go']['main']['App']['ListEpisodes'](arg1, arg2);
+}
+
+export function ListHistory() {
+  return window['go']['main']['App']['ListHistory']();
+}
+
+export function ListPresets() {
+  return window['go']['main']['App']['ListPresets']();
 }
 
 export function ListProviders() {
@@ -22,8 +42,24 @@ export function OpenDirectoryDialog() {
   return window['go']['main']['App']['OpenDirectoryDialog']();
 }
 
+export function PreviewMatched(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['main']['App']['PreviewMatched'](arg1, arg2, arg3, arg4, arg5);
+}
+
 export function PreviewRename(arg1, arg2, arg3, arg4) {
   return window['go']['main']['App']['PreviewRename'](arg1, arg2, arg3, arg4);
+}
+
+export function RenderNamePreview(arg1, arg2, arg3) {
+  return window['go']['main']['App']['RenderNamePreview'](arg1, arg2, arg3);
+}
+
+export function RenderTemplatePreview(arg1, arg2, arg3, arg4) {
+  return window['go']['main']['App']['RenderTemplatePreview'](arg1, arg2, arg3, arg4);
+}
+
+export function RevertHistory(arg1) {
+  return window['go']['main']['App']['RevertHistory'](arg1);
 }
 
 export function SaveConfig(arg1) {
@@ -34,10 +70,18 @@ export function ScanDirectory(arg1) {
   return window['go']['main']['App']['ScanDirectory'](arg1);
 }
 
+export function ScanDirectoryWithOptions(arg1, arg2, arg3) {
+  return window['go']['main']['App']['ScanDirectoryWithOptions'](arg1, arg2, arg3);
+}
+
 export function SearchShows(arg1, arg2) {
   return window['go']['main']['App']['SearchShows'](arg1, arg2);
 }
 
 export function UndoLastRename() {
   return window['go']['main']['App']['UndoLastRename']();
+}
+
+export function VerifyEmbeddedCRC(arg1) {
+  return window['go']['main']['App']['VerifyEmbeddedCRC'](arg1);
 }

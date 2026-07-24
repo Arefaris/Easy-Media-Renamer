@@ -47,10 +47,11 @@ func (c *Client) Search(ctx context.Context, query string) ([]provider.Show, err
 }
 func (c *Client) Episodes(ctx context.Context, id string) ([]provider.Episode, error) {
 	var raw []struct {
-		Name   string `json:"name"`
-		Season int    `json:"season"`
-		Number int    `json:"number"`
-		Type   string `json:"type"`
+		Name    string `json:"name"`
+		Season  int    `json:"season"`
+		Number  int    `json:"number"`
+		Type    string `json:"type"`
+		AirDate string `json:"airdate"`
 	}
 	if err := c.get(ctx, "https://api.tvmaze.com/shows/"+url.PathEscape(id)+"/episodes?specials=1", &raw); err != nil {
 		return nil, err
@@ -61,7 +62,14 @@ func (c *Client) Episodes(ctx context.Context, id string) ([]provider.Episode, e
 		if special && !c.IncludeSpecials {
 			continue
 		}
-		out = append(out, provider.Episode{Season: e.Season, Number: e.Number, Title: e.Name, Special: special})
+		out = append(out, provider.Episode{Season: e.Season, Number: e.Number, Title: e.Name, Special: special, AirDate: e.AirDate})
+	}
+	abs := 0
+	for i := range out {
+		if !out[i].Special {
+			abs++
+			out[i].Absolute = abs
+		}
 	}
 	return out, nil
 }

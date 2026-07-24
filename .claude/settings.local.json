@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -f internal/media/zz_adhoc_probe_test.go internal/match/zz_adhoc_probe_test.go)",
+      "Bash(go test *)"
+    ]
+  }
+}

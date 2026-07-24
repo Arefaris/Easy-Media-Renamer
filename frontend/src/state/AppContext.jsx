@@ -1,6 +1,6 @@
 import {createContext, useContext, useReducer} from 'react'
 
-const initial = {providers:[], provider:'TVmaze', query:'', shows:[], show:null, episodes:[], dir:'', files:[], preview:[], loading:false, error:'', settings:false, config:null}
+const initial = {providers:[], provider:'TVmaze', query:'', shows:[], show:null, episodes:[], dir:'', files:[], pairs:[], preview:[], presets:[], history:[], historyOpen:false, checksumOpen:false, checksumResults:[], loading:false, error:'', notice:'', settings:false, config:null}
 const Context = createContext(null)
 function reducer(state, action) {
   if (action.type === 'patch') return {...state, ...action.value}
