@@ -8,4 +8,5 @@ export default [
   {languageOptions: { globals: {...globals.browser, ...globals.node} }},
   pluginJs.configs.recommended,
   pluginReact.configs.flat.recommended,
+	{settings: {react: {version: "detect"}}, rules: {"react/react-in-jsx-scope": "off", "react/prop-types": "off"}},
 ];

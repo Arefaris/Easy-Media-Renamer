@@ -1,6 +1,11 @@
 build/bin
 node_modules
 frontend/dist
+!frontend/dist/.gitkeep
+.cache/
+.tmp/
 apikeys.env
 frontend/src/assets/keys.json
 keys.json
+/test_rename_files
+plan.md

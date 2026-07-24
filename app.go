@@ -2,439 +2,149 @@ package main
 
 import (
 	"context"
-	_ "embed"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
+	"sync"
+	"time"
+
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"go.felesatra.moe/anidb"
-	tmdb "github.com/cyruzin/golang-tmdb"
+	"myproject/internal/config"
+	"myproject/internal/media"
+	"myproject/internal/provider"
+	"myproject/internal/provider/anidb"
+	"myproject/internal/provider/tmdb"
+	"myproject/internal/provider/tvmaze"
 )
 
-//go:embed keys.json
-var jsonData []byte
-
-// App struct
 type App struct {
-	ctx context.Context
+	ctx       context.Context
+	mu        sync.RWMutex
+	cfg       config.Config
+	providers *provider.Registry
 }
 
-
-type Show struct {
-	Score float64 `json:"score"`
-	Show  struct {
-		ID    int    `json:"id"`
-		Name  string `json:"name"`
-		Genre []string `json:"genres"`
-
-	} `json:"show"`
-}
-
-type Episode struct {
-	ID     int    `json:"id"`
-	Name   string `json:"name"`
-	Season int    `json:"season"`
-	Number int `json:"number"`
-}
-
-type Api struct {
-	NameAniDb string `json:"anidb"`
-	Anidbv int `json:"anidbv"`
-	Tmdb string `json:"tmdb"`
-}
-
-
-var clientAniDb anidb.Client
-var api Api
-
-func loadClients(){
-	//opening our json
-
-	json.Unmarshal(jsonData, &api)
-
-	clientAniDb = anidb.Client{
-		Name: api.NameAniDb, 
-		Version: api.Anidbv,
-	}
-	
-
-}
-
-
-// NewApp creates a new App application struct
 func NewApp() *App {
-  	loadClients()
-	return &App{}
+	cfg, err := config.Load()
+	if err != nil {
+		cfg = config.Default()
+	}
+	a := &App{cfg: cfg}
+	a.rebuildProviders()
+	return a
 }
-
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
-func (a *App) startup(ctx context.Context) {
-	a.ctx = ctx
+func (a *App) startup(ctx context.Context) { a.ctx = ctx }
+func (a *App) rebuildProviders() {
+	a.providers = provider.NewRegistry(tvmaze.New(a.cfg.IncludeSpecials), tmdb.New(a.cfg.TMDBAPIKey, a.cfg.IncludeSpecials), anidb.Default(a.cfg.IncludeSpecials))
 }
-
-
-
-
+func (a *App) ListProviders() []provider.Info {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	return a.providers.List()
+}
+func (a *App) provider(name string) (provider.Provider, error) {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	p, ok := a.providers.Get(name)
+	if !ok {
+		return nil, fmt.Errorf("unknown provider %q", name)
+	}
+	if !p.Configured() {
+		return nil, fmt.Errorf("%s requires configuration", name)
+	}
+	return p, nil
+}
+func (a *App) SearchShows(name, query string) ([]provider.Show, error) {
+	if strings.TrimSpace(query) == "" {
+		return []provider.Show{}, nil
+	}
+	p, e := a.provider(name)
+	if e != nil {
+		return nil, e
+	}
+	ctx, cancel := context.WithTimeout(a.context(), 30*time.Second)
+	defer cancel()
+	return p.Search(ctx, query)
+}
+func (a *App) ListEpisodes(name, id string) ([]provider.Episode, error) {
+	p, e := a.provider(name)
+	if e != nil {
+		return nil, e
+	}
+	ctx, cancel := context.WithTimeout(a.context(), 60*time.Second)
+	defer cancel()
+	return p.Episodes(ctx, id)
+}
 func (a *App) OpenDirectoryDialog() (string, error) {
-    return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
-        Title: "Select Directory",
-    })
-
+	if a.ctx == nil {
+		return "", errors.New("application is not started")
+	}
+	return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{Title: "Select media directory"})
 }
-
-var apitype string
-func (a *App) SearchShow(show string, apis string) ([]Show){
-	shows := []Show{}
-
-	apitype = apis
-	if apitype == "TVmaze"{
-		shows = tvmazeApi(show)
-	}else if apitype == "AniDB"{
-		shows = aniDbApi(show)
-		
-	}else if apitype == "TMDB"{
-		shows = tmdDbApi(show)
-	}	
-	return shows
+func (a *App) ScanDirectory(dir string) ([]media.File, error) {
+	a.mu.RLock()
+	ext := append([]string(nil), a.cfg.MediaExtensions...)
+	a.mu.RUnlock()
+	return media.ScanDirectory(dir, ext)
 }
-
-func tmdDbApi(show string)([]Show){
-
-	apishow := Show{}
-	apishows := []Show{}
-
-	tmdbClient, err := tmdb.Init(api.Tmdb)
-
+func (a *App) PreviewRename(dir string, files []string, eps []provider.Episode, show provider.Show) ([]media.Op, error) {
+	a.mu.RLock()
+	tmpl := a.cfg.NameTemplate
+	a.mu.RUnlock()
+	if e := validateFilesInDir(dir, files); e != nil {
+		return nil, e
+	}
+	return media.Plan(dir, files, eps, show, tmpl)
+}
+func (a *App) ApplyRename(dir string, ops []media.Op) (media.Result, error) {
+	for _, op := range ops {
+		if !inside(dir, op.From) || !inside(dir, op.To) {
+			return media.Result{}, errors.New("rename path is outside selected directory")
+		}
+	}
+	return media.Apply(ops)
+}
+func (a *App) UndoLastRename() (media.Result, error) { return media.Undo() }
+func (a *App) GetConfig() (config.Config, error) {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	return a.cfg, nil
+}
+func (a *App) SaveConfig(cfg config.Config) error {
+	if err := config.Save(cfg); err != nil {
+		return err
+	}
+	loaded, err := config.Load()
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
-
-	options := make(map[string]string)
-	options["language"] = "EN"
-
-	// Multi Search
-	search, err := tmdbClient.GetSearchMulti(show, options)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	
-	// Iterate
-	for _, v := range search.Results {
-
-		if v.MediaType == "movie" {
-			
-			if (len(v.Title) > 0){
-				
-				apishow.Show.ID = int(v.ID)
-				apishow.Show.Name = v.Title 
-				apishows = append(apishows, apishow)
-				
-			}
-			
-		} 
-		 if v.MediaType == "tv" {
-				
-				
-				apishow.Show.ID = int(v.ID)
-				apishow.Show.Name = v.Name 
-				apishows = append(apishows, apishow)
-			
-			
-		} 
-	}
-	
-	return apishows
+	a.mu.Lock()
+	a.cfg = loaded
+	a.rebuildProviders()
+	a.mu.Unlock()
+	return nil
 }
-
-func aniDbApi(show string)([]Show){
-	
-	apishow := Show{}
-	apishows := []Show{}
-
-	c, err := anidb.DefaultTitlesCache()
-	if err != nil {
-		panic(err)
+func (a *App) context() context.Context {
+	if a.ctx != nil {
+		return a.ctx
 	}
-	defer c.SaveIfUpdated()
-
-	titles, err := c.GetTitles()
-	if err != nil {
-		panic(err)
-	}
-
-	searchTerm := show
-    for _, anime := range titles {
-        for _, title := range anime.Titles {
-            if strings.Contains(strings.ToLower(title.Name), strings.ToLower(searchTerm)) {
-				apishow.Show.ID = anime.AID
-				apishow.Show.Name = title.Name
-				apishows = append(apishows, apishow)
-            }
-        }
-    }
-	return apishows
-
+	return context.Background()
 }
-
-func tvmazeApi(show string)([]Show){
-	url := "https://api.tvmaze.com/search/shows?q="+show 
-	
-	
-	
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Fatalf("%v", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("%v", err)
-	}
-	
-
-	var shows []Show
-	if err := json.Unmarshal(body, &shows); err != nil {
-		log.Fatalf("%v", err)
-	}
-	
-	return shows
-}
-
-
-
-
-var episodes []Episode
-var episodeList = []string{}
-
-func (a *App) GetEpisodesGO(showID int) []string{
-	
-	if apitype == "TVmaze"{
-		episodeList = a.EpisodesTvMaze(showID)
-	}else if apitype == "AniDB"{
-		episodeList = a.EpisodesAniDb(showID)
-	}else if apitype == "TMDB"{
-		episodeList = a.EpisodesTmDb(showID)
-	}
-	
-	return episodeList
-}
-
-func (a *App) EpisodesTmDb(showId int) []string{
-	episodeList = nil
-	tmdbClient, err := tmdb.Init(api.Tmdb)
-
-	
-	if err != nil {
-		fmt.Println(err)
-
-	}
-	
-
-	options := make(map[string]string)
-	options["language"] = "EN"
-	
-	details, _ := tmdbClient.GetTVDetails(showId, options)
-	
-	
-	// Перебираем все сезоны и эпизоды
-	for _, season := range details.Seasons {
-		episodes, err := tmdbClient.GetTVSeasonDetails(showId, season.SeasonNumber, nil)
-		if err != nil {
-			log.Fatalf("Error getting season details: %v", err)
-		}
-
-		
-		for _, episode := range episodes.Episodes {
-			epseason := strconv.Itoa(season.SeasonNumber)
-			epnumber := strconv.Itoa(episode.EpisodeNumber)
-			cleanEpisode := a.cleanName(episode.Name)
-
-			if (episode.EpisodeNumber < 10){
-				epnumber = "0"+epnumber
-			}
-	
-			if (episode.SeasonNumber < 10){
-				epseason = "0"+epseason
-			}
-			episodeList = append(episodeList, cleanEpisode+" - s"+epseason+"e"+epnumber)
+func validateFilesInDir(dir string, files []string) error {
+	for _, f := range files {
+		if filepath.Base(f) != f || !inside(dir, filepath.Join(dir, f)) {
+			return fmt.Errorf("invalid file name %q", f)
 		}
 	}
-	return episodeList
-
+	return nil
 }
-
-
-func (a *App) EpisodesTvMaze(showID int) []string{ 
-	episodeList = nil
-	url := fmt.Sprintf("https://api.tvmaze.com/shows/%d/episodes", showID)
-	
-	resp, err := http.Get(url)
-
-	if err != nil {
-		log.Fatalf("%v", err)
+func inside(dir, path string) bool {
+	base, e1 := filepath.Abs(dir)
+	target, e2 := filepath.Abs(path)
+	if e1 != nil || e2 != nil {
+		return false
 	}
-	defer resp.Body.Close()
-	
-	
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("%v", err)
-	}
-
-	if err := json.Unmarshal(body, &episodes); err != nil {
-		log.Printf("%v", err)
-	}
-	
-	
-	for _, episode := range episodes{
-		cleanEpisode := a.cleanName(episode.Name)
-		epnumber := strconv.Itoa(episode.Number)
-		epseason := strconv.Itoa(episode.Season)
-
-		if (episode.Number < 10){
-			epnumber = "0"+epnumber
-		}
-
-		if (episode.Season < 10 && episode.Season != 0){
-			epseason = "0"+epseason
-		}
-		
-		
-		
-		episodeList = append(episodeList, cleanEpisode+" - s"+epseason+"e"+epnumber)
-	}
-	
-	return episodeList
-
-}
-
-func (a *App) EpisodesAniDb(showID int) []string{
-
-		anime, err := clientAniDb.RequestAnime(showID)
-		
-		if err != nil {
-			panic(err)
-		}
-		namesNepisodes := map[int]string{}
-		for _, Episode := range anime.Episodes {
-			
-			
-			for _, title := range Episode.Titles {
-				if (title.Lang == "en"){
-					n , _ := strconv.Atoi(Episode.EpNo)
-					
-					
-					namesNepisodes[n] = title.Title
-					
-			}
-				}
-
-				sortedList := []string{}
-				for i := 1; i < len(namesNepisodes); i++ {
-					epname := a.cleanName(namesNepisodes[i])
-					
-			
-					epnumber := strconv.Itoa(i)
-
-					if (i < 10){
-						epnumber = "0"+epnumber
-					}
-
-					sortedList = append(sortedList, epname + " - " + epnumber)
-				}
-				
-				episodeList = sortedList
-				
-		}
-		return episodeList
-}
-
-//clean name from special characters.
-func (a *App) cleanName(name string)string{
-	specialChars := []string{"<", ">", ":", "\"", "/", "\\", "|", "?", "*", "?"}
-	for _, char := range specialChars {
-		if strings.Contains(name, char) {
-			name = strings.Replace(name, char, "", -1)
-		}
-	}
-	return name
-}
-
-var file_names_list = []string{}
-var file_path_list  = []string{}
-var userDIR string
-
-func (a *App) FilesInDirectoryHandlerGO(directory string)[]string{
-	file_names_list = nil
-	userDIR = directory
-	files, err := os.ReadDir(directory)
-
-    if err != nil {
-        println(err)
-    }
-    
-	for _, file := range files {
-		file_names_list = append(file_names_list, file.Name())
-		file_path_list = append(file_path_list, filepath.Join(directory, file.Name()))
-	}
-	
-	return file_names_list
-
-}
-
-func stringInSlice(a string, list []string) bool {
-    for _, b := range list {
-        if b == a {
-            return true
-        }
-    }
-    return false
-}
-
-func (a *App)RenameAllGO(fileNamelist[]string) {
-	if len(fileNamelist) > 0 && len(episodeList) > 0 {
-		fmt.Println(episodeList)
-		for i := 0; i < len(episodeList)&&i < len(fileNamelist); i++ {
-			ext := filepath.Ext(fileNamelist[i])
-			newfile := filepath.Join(userDIR, episodeList[i]+ext)
-			oldfile := filepath.Join(userDIR, fileNamelist[i])
-
-			//checking if name is already exist in a folder, if not, rename
-			if !stringInSlice(episodeList[i]+ext, file_names_list){
-				e := os.Rename(oldfile, newfile)
-				if e != nil { 
-					log.Fatal(e)
-				}
-				fmt.Println(oldfile, "changed to: ", newfile)
-		}
-	
-		}
-	}
-	
-}
-
-func (a *App)RenameSelectedGO(originalFileName string, newFileName string){
-	originalFilePath := filepath.Join(userDIR, originalFileName)
-	ext := filepath.Ext(originalFilePath)
-	newFilePath := filepath.Join(userDIR, newFileName+ext)
-	
-	
-	
-	if !stringInSlice(newFileName+ext, file_names_list){
-		e := os.Rename(originalFilePath, newFilePath)
-		if e != nil { 
-			log.Fatal(e)
-		}
-	}
-	
+	rel, e := filepath.Rel(base, target)
+	return e == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }
